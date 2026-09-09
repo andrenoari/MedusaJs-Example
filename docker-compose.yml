@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Coolify}
+      POSTGRES_DB: medusa
+    volumes:
+      - medusa-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  medusa:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Coolify}@postgres:5432/medusa
+      REDIS_URL: redis://redis:6379
+      STORE_CORS: ${STORE_CORS:?Set STORE_CORS in Coolify}
+      ADMIN_CORS: ${ADMIN_CORS:?Set ADMIN_CORS in Coolify}
+      AUTH_CORS: ${AUTH_CORS:?Set AUTH_CORS in Coolify}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in Coolify}
+      COOKIE_SECRET: ${COOKIE_SECRET:?Set COOKIE_SECRET in Coolify}
+      AUTH_MFA_ENCRYPTION_KEY: ${AUTH_MFA_ENCRYPTION_KEY:?Set AUTH_MFA_ENCRYPTION_KEY in Coolify}
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "9000:9000"
+
+  storefront:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - medusa
+    ports:
+      - "80:80"
+
+volumes:
+  medusa-postgres:
