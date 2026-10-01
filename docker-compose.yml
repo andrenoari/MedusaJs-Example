@@ -19,6 +19,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Coolify}@postgres:5432/medusa
+      PGSSLMODE: ${PGSSLMODE:-disable}
       REDIS_URL: redis://redis:6379
       STORE_CORS: ${STORE_CORS:?Set STORE_CORS in Coolify}
       ADMIN_CORS: ${ADMIN_CORS:?Set ADMIN_CORS in Coolify}
